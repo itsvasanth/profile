@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume | Vasantha Kumar Reddy V M</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices: 
+        - Report Info: Hero section (Name, Title, Summary, Contact). Goal: Introduce/Orient. Method: Prominent text, clear call-to-action buttons. Interaction: Fade-in. Justification: Establishes identity and provides immediate contact options.
+        - Report Info: 6+ years experience. Goal: Inform/Contextualize. Method: Key stat card with hover tooltip. Interaction: Hover to reveal elaborative text. Justification: Provides additional context without cluttering the card.
+        - Report Info: 3 Core Roles. Goal: Inform/Contextualize. Method: Key stat card with hover tooltip. Interaction: Hover to reveal company details. Justification: Provides quick access to company history without cluttering the main card.
+        - Report Info: ECU Cybersecurity Specialization. Goal: Inform/Contextualize. Method: Key stat card with hover tooltip. Interaction: Hover to reveal key aspects of specialization. Justification: Offers deeper insight into the primary specialization.
+        - Report Info: Core skills (ECU Cybersecurity, AUTOSAR, Tools, Testing). Goal: Organize/Compare. Method: Visually distinct competency cards with icons and brief descriptions, arranged in a balanced grid. Interaction: Hover effects, staggered fade-in on scroll. Justification: Improves scannability, aesthetic appeal, and UX by clearly segmenting key strengths and providing a dynamic presentation.
+        - Report Info: Career history (3 companies). Goal: Show Change/Progression. Method: Interactive HTML/CSS timeline with hover effects. Interaction: Click to scroll to project details. Justification: Provides an intuitive, visual map of the career path.
+        - Report Info: Project responsibilities. Goal: Organize/Inform. Method: Tab-like project cards with strong action verbs and technology tags. Interaction: Timeline click navigation. Justification: Breaks down dense information into digestible, focused chunks.
+        - Report Info: Automotive ECU Cybersecurity skills. Goal: Compare. Method: Chart.js Bar Chart. Interaction: Hover tooltips. Justification: Provides a visual breakdown of core cybersecurity competencies, adapted for dark theme.
+        - Report Info: Education. Goal: Inform. Method: Clean HTML card. Interaction: None. Justification: Presents credentials in a clear, professional format.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; 
+            background-image: radial-gradient(circle at top left, #1F2937, #111827 70%);
+            color: #D1D5DB; 
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 320px;
+            width: 100%;
+            max-width: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+                max-width: 500px;
+            }
+        }
+        .glassmorphism-dark {
+            background: rgba(17, 24, 39, 0.8); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(55, 65, 81, 0.6); 
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2.5rem;
+            padding-left: 2.5rem;
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0.25rem;
+            height: 1rem;
+            width: 1rem;
+            background-color: #3B82F6; 
+            border-radius: 9999px;
+            border: 3px solid #1F2937; 
+            transition: box-shadow 0.3s ease;
+        }
+        .timeline-item:hover .timeline-marker {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3); 
+        }
+        .timeline-line {
+            position: absolute;
+            left: 0.45rem;
+            top: 1rem;
+            bottom: 0;
+            width: 2px;
+            background-color: #4B5563; 
+        }
+        .nav-link {
+            color: #9CA3AF; 
+        }
+        .nav-link:hover {
+            color: #BFDBFE; 
+        }
+        .nav-link.active {
+            color: #60A5FA; 
+            border-bottom-color: #60A5FA; 
+        }
+        .card-dark {
+            background-color: #1F2937; 
+            border-radius: 0.75rem; 
+            padding: 1.5rem; 
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #374151; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); 
+        }
+        .card-dark:hover {
+            transform: translateY(-6px);
+            border-color: #4B5563; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15), 0 4px 6px -4px rgba(0,0,0,0.1); 
+        }
+        .competency-icon {
+            font-size: 1.875rem; 
+            margin-bottom: 1rem; 
+            color: #60A5FA; 
+            line-height: 1; 
+        }
+        .fade-in-section, .fade-in-item { /* Unified initial state for all fade-in elements */
+            opacity: 0;
+            transform: translateY(20px);
+            transition-property: opacity, transform;
+            transition-duration: 0.7s;
+            transition-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+        .fade-in-section.is-visible, .fade-in-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section-divider {
+            border-color: #374151; 
+        }
+        .text-primary-dark {
+            color: #E5E7EB; 
+        }
+        .text-secondary-dark {
+            color: #9CA3AF; 
+        }
+        .text-accent-dark {
+            color: #60A5FA; 
+        }
+        .bg-accent-subtle-dark {
+            background-color: #1E3A8A; 
+        }
+        .button-primary-dark {
+             background-color: #2563EB; 
+             color: #EFF6FF; 
+             transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+             box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+        }
+        .button-primary-dark:hover {
+            background-color: #1D4ED8; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15), 0 2px 4px -2px rgba(0,0,0,0.15);
+        }
+        .button-secondary-dark {
+            background-color: #374151; 
+            color: #D1D5DB; 
+            border: 1px solid #4B5563; 
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+        }
+        .button-secondary-dark:hover {
+            background-color: #4B5563; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15), 0 2px 4px -2px rgba(0,0,0,0.15);
+        }
+        .skill-tag-dark {
+            background-color: #374151; 
+            color: #BFDBFE; 
+            padding-left: 0.75rem; padding-right: 0.75rem; padding-top:0.25rem; padding-bottom:0.25rem;
+            border-radius: 9999px;
+            font-size: 0.75rem; 
+            font-weight: 500; 
+        }
+        .tooltip-custom {
+            min-width: 280px; 
+            max-width: 320px;
+        }
+        .tooltip-arrow {
+            content: '';
+            position: absolute;
+            bottom: -4px; 
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 0.75rem; 
+            height: 0.75rem; 
+            background-color: #374151; 
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 z-50 glassmorphism-dark">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="#home" class="text-lg font-bold text-primary-dark hover:text-accent-dark transition-colors">Vasantha Kumar Reddy V M</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#dashboard" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Dashboard</a>
+                        <a href="#experience" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Experience</a>
+                        <a href="#skills" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Skills</a>
+                        <a href="#education" class="nav-link px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent transition-all duration-300">Education</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" id="mobile-menu-button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#dashboard" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                <a href="#experience" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Experience</a>
+                <a href="#skills" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Skills</a>
+                <a href="#education" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Education</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <section id="home" class="text-center pt-16 pb-20 fade-in-section">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-primary-dark tracking-tight">
+                Vasantha Kumar Reddy V M
+            </h1>
+            <p class="mt-4 text-xl md:text-2xl font-semibold text-accent-dark">
+                Senior Systems Engineer | Automotive ECU Cybersecurity
+            </p>
+            <p class="mt-6 max-w-3xl mx-auto text-lg text-secondary-dark leading-relaxed">
+                A Cyber Security Engineer with over 6 years of experience in automotive ECU security. Specialized in immobilizer systems, Hardware Security Module (HSM) integration, AUTOSAR configuration, and secure in-vehicle communication.
+            </p>
+            <div class="mt-10 flex justify-center space-x-4">
+                 <a href="mailto:vasanthkumar753@gmail.com" class="button-secondary-dark inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                    Email
+                </a>
+                <a href="https://linkedin.com/in/itsvasanthkumarreddy" target="_blank" rel="noopener noreferrer" class="button-primary-dark inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.389 0-1.601 1.086-1.601 2.206v4.248H8.014V8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.71zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 114.128 0c0 1.14-.925 2.065-2.064 2.065zM6.613 16.338H4.06v-7.75h2.553v7.75zM17.662 0H2.338C1.048 0 0 1.048 0 2.338v15.324C0 18.952 1.048 20 2.338 20h15.324c1.29 0 2.338-1.048 2.338-2.338V2.338C20 1.048 18.952 0 17.662 0z" clip-rule="evenodd"></path></svg>
+                    LinkedIn
+                </a>
+            </div>
+        </section>
+
+        <div class="border-t section-divider my-16 fade-in-section"></div>
+
+        <section id="dashboard" class="py-16 md:py-20 fade-in-section">
+            <h2 class="text-3xl font-bold tracking-tight text-center text-primary-dark">Career Dashboard</h2>
+            <p class="mt-4 text-lg text-center text-secondary-dark max-w-2xl mx-auto">An at-a-glance overview of my professional profile, key metrics, and core competencies.</p>
+            
+            <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3 fade-in-section" data-stagger-children="0.1">
+                <div class="card-dark transform hover:scale-105 relative group fade-in-item">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-blue-700 text-blue-100 rounded-lg p-3">
+                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-3xl font-bold text-primary-dark">6+ Years</p>
+                            <p class="text-md text-secondary-dark">Industry Experience</p>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-max p-3
+                                bg-gray-700 text-gray-100 text-xs rounded-md shadow-lg 
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20
+                                pointer-events-none group-hover:pointer-events-auto tooltip-custom">
+                        Over six years dedicated to advancing automotive embedded systems, focusing on security and AUTOSAR standards.
+                        <div class="tooltip-arrow"></div>
+                    </div>
+                </div>
+                 <div class="card-dark transform hover:scale-105 relative group fade-in-item">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-green-700 text-green-100 rounded-lg p-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-3xl font-bold text-primary-dark">3 Core Roles</p>
+                            <p class="text-md text-secondary-dark">Leading Tech Firms</p>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-max p-3
+                                bg-gray-700 text-gray-100 text-xs rounded-md shadow-lg 
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20
+                                pointer-events-none group-hover:pointer-events-auto tooltip-custom">
+                        <ul class="space-y-2 text-left">
+                            <li><strong class="text-blue-300">Bosch Global Software Technologies</strong><br><span class="text-gray-400 text-xs">June 2022 – Present, Coimbatore, India</span></li>
+                            <li><strong class="text-blue-300">Visteon Corporation</strong><br><span class="text-gray-400 text-xs">Feb 2021 – May 2022, Chennai, India</span></li>
+                            <li><strong class="text-blue-300">Jasmin Infotech</strong><br><span class="text-gray-400 text-xs">Apr 2019 – Jan 2021, Chennai, India</span></li>
+                        </ul>
+                        <div class="tooltip-arrow"></div>
+                    </div>
+                </div>
+                 <div class="card-dark transform hover:scale-105 md:col-span-2 lg:col-span-1 relative group fade-in-item">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-purple-700 text-purple-100 rounded-lg p-3">
+                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-3xl font-bold text-primary-dark">ECU Cybersecurity</p>
+                            <p class="text-md text-secondary-dark">Primary Specialization</p>
+                        </div>
+                    </div>
+                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-max p-3
+                                bg-gray-700 text-gray-100 text-xs rounded-md shadow-lg 
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20
+                                pointer-events-none group-hover:pointer-events-auto tooltip-custom">
+                        Deep expertise in HSM integration, secure boot, cryptographic services, and immobilizer systems for robust vehicle protection.
+                        <div class="tooltip-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-20 fade-in-section">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-primary-dark mb-4">Core Competencies</h3>
+                    <p class="text-secondary-dark max-w-3xl mx-auto mb-12">My core strengths are centered around architecting secure and robust automotive systems. Explore the key pillars of my expertise:</p>
+                </div>
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" data-stagger-children="0.1">
+                        <div class="card-dark fade-in-item">
+                            <div class="competency-icon">🛡️</div>
+                            <h4 class="font-semibold text-lg text-primary-dark">Automotive Cybersecurity</h4>
+                            <p class="mt-1 text-sm text-secondary-dark leading-relaxed">Designing and implementing robust security solutions for ECUs, including HSM integration and cryptographic services.</p>
+                        </div>
+                        <div class="card-dark fade-in-item">
+                            <div class="competency-icon">⚙️</div>
+                            <h4 class="font-semibold text-lg text-primary-dark">AUTOSAR Architecture</h4>
+                            <p class="mt-1 text-sm text-secondary-dark leading-relaxed">Deep expertise in AUTOSAR layered architecture, RTE configuration, and SWC design for complex automotive systems.</p>
+                        </div>
+                        <div class="card-dark fade-in-item">
+                            <div class="competency-icon">🧪</div>
+                            <h4 class="font-semibold text-lg text-primary-dark">System Design & Testing</h4>
+                            <p class="mt-1 text-sm text-secondary-dark leading-relaxed">Proficient in full-lifecycle system development, from requirements elicitation to rigorous testing and validation.</p>
+                        </div>
+                        <div class="card-dark fade-in-item lg:col-start-1 lg:col-end-2">
+                            <div class="competency-icon">🔗</div>
+                            <h4 class="font-semibold text-lg text-primary-dark">In-Vehicle Networking</h4>
+                            <p class="mt-1 text-sm text-secondary-dark leading-relaxed">Mastery of CAN/CAN FD, secure communication protocols, and diagnostic services (UDS, OBDonUDS).</p>
+                        </div>
+                         <div class="card-dark fade-in-item lg:col-start-2 lg:col-end-3">
+                            <div class="competency-icon">💻</div>
+                            <h4 class="font-semibold text-lg text-primary-dark">Embedded Development & Tools</h4>
+                            <p class="mt-1 text-sm text-secondary-dark leading-relaxed">Skilled in Embedded C, CAPL, Python, and industry-standard tools like DaVinci, Vector CANoe, & CycurHSM.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t section-divider my-16 fade-in-section"></div>
+
+        <section id="experience" class="py-16 md:py-20 fade-in-section">
+            <h2 class="text-3xl font-bold tracking-tight text-center text-primary-dark">Professional Experience</h2>
+            <p class="mt-4 text-lg text-center text-secondary-dark max-w-2xl mx-auto">A detailed timeline of my career, highlighting key projects, responsibilities, and the technologies I've mastered. Click on a timeline entry to learn more.</p>
+
+            <div class="mt-16 max-w-4xl mx-auto fade-in-section">
+                <div class="relative">
+                    <div class="timeline-line"></div>
+                    <div class="timeline-item" id="timeline-bosch">
+                        <div class="timeline-marker"></div>
+                        <p class="font-semibold text-accent-dark">June 2022 – Present</p>
+                        <h3 class="text-xl font-bold text-primary-dark mt-1">Bosch Global Software Technologies</h3>
+                        <p class="text-md text-secondary-dark">Coimbatore, India</p>
+                    </div>
+                    <div class="timeline-item" id="timeline-visteon">
+                        <div class="timeline-marker"></div>
+                        <p class="font-semibold text-accent-dark">Feb 2021 – May 2022</p>
+                        <h3 class="text-xl font-bold text-primary-dark mt-1">Visteon Corporation</h3>
+                        <p class="text-md text-secondary-dark">Chennai, India</p>
+                    </div>
+                     <div class="timeline-item" id="timeline-jasmin">
+                        <div class="timeline-marker"></div>
+                        <p class="font-semibold text-accent-dark">Apr 2019 – Jan 2021</p>
+                        <h3 class="text-xl font-bold text-primary-dark mt-1">Jasmin Infotech</h3>
+                        <p class="text-md text-secondary-dark">Chennai, India</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="experience-details" class="mt-12 space-y-12" data-stagger-children="0.15">
+                 <div id="project-bosch" class="card-dark fade-in-item">
+                    <h4 class="text-2xl font-bold text-primary-dark">Immobilizer Software Development (Multiple OEM)</h4>
+                    <p class="text-secondary-dark mt-2 leading-relaxed">At Bosch, I engineer the immobilizer application software component, a critical security feature preventing unauthorized vehicle operation. This role involves deep engagement with cryptographic concepts, multicore processors (Infineon TC39x), and dedicated HSM cores to ensure robust vehicle security.</p>
+                    <h5 class="font-semibold text-lg mt-6 mb-3 text-primary-dark">Key Contributions:</h5>
+                    <ul class="list-disc list-inside space-y-2 text-secondary-dark">
+                        <li>Architected and supported the complete product life cycle, from project acquisition and requirements engineering through to post-launch support.</li>
+                        <li>Engineered secure cryptographic operations (encryption, decryption, TRNG, key management) by leveraging the ESCRYPT CycurHSM and its Cryptographic Service Abstraction Interface (CSAI).</li>
+                        <li>Spearheaded requirements elicitation processes, resolving ambiguities and driving consensus among diverse stakeholders to establish clear, actionable project requirements and prevent rework.</li>
+                    </ul>
+                    <div class="mt-6">
+                        <h5 class="font-semibold text-lg mb-3 text-primary-dark">Technologies Used:</h5>
+                        <div class="flex flex-wrap gap-2">
+                           <span class="skill-tag-dark">AUTOSAR</span>
+                           <span class="skill-tag-dark">CycurHSM</span>
+                           <span class="skill-tag-dark">Embedded C</span>
+                           <span class="skill-tag-dark">Infineon TC39x</span>
+                           <span class="skill-tag-dark">DaVinci</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="project-visteon" class="card-dark fade-in-item">
+                    <h4 class="text-2xl font-bold text-primary-dark">BSW Layer Configuration & Defect Triage</h4>
+                     <p class="text-secondary-dark mt-2 leading-relaxed">For Visteon's advanced instrument cluster ECU, I was responsible for BSW configuration, integration, and defect management. The project involved a complex i.MX8 processor with separate cores for HMI and vehicle networking, requiring meticulous coordination within an agile framework.</p>
+                    <h5 class="font-semibold text-lg mt-6 mb-3 text-primary-dark">Key Contributions:</h5>
+                     <ul class="list-disc list-inside space-y-2 text-secondary-dark">
+                        <li>Drove defect management within scrum teams by leading triaging, tracking, and resolution efforts, significantly improving software quality and ensuring on-time releases.</li>
+                        <li>Developed and implemented Python-based automation scripts that streamlined the build and release workflow, reducing manual intervention and increasing efficiency.</li>
+                        <li>Proactively replaced a Vector hardware dependency with a PCAN software solution for CAN communication, reducing equipment costs while maintaining full testing capabilities.</li>
+                     </ul>
+                    <div class="mt-6">
+                        <h5 class="font-semibold text-lg mb-3 text-primary-dark">Technologies Used:</h5>
+                        <div class="flex flex-wrap gap-2">
+                           <span class="skill-tag-dark">AUTOSAR BSW</span>
+                           <span class="skill-tag-dark">Python</span>
+                           <span class="skill-tag-dark">i.MX8 Processor</span>
+                           <span class="skill-tag-dark">CAN</span>
+                           <span class="skill-tag-dark">Agile/Scrum</span>
+                        </div>
+                    </div>
+                </div>
+
+                 <div id="project-jasmin" class="card-dark fade-in-item">
+                    <h4 class="text-2xl font-bold text-primary-dark">Daimler CAN Network Testing</h4>
+                     <p class="text-secondary-dark mt-2 leading-relaxed">As a Test Engineer at Jasmin Infotech, I executed CAN network testing for Daimler's On-Board Charger (OBC) and Rear Seat Entertainment (RSE) ECUs. This involved creating robust test environments and scripts to validate ECU communication and diagnostic services.</p>
+                    <h5 class="font-semibold text-lg mt-6 mb-3 text-primary-dark">Key Contributions:</h5>
+                     <ul class="list-disc list-inside space-y-2 text-secondary-dark">
+                        <li>Developed over 100 comprehensive test scripts using CAPL and configured complex test environments in CANoe to validate network behavior.</li>
+                        <li>Executed rigorous short tests and full functional tests for all software modules, ensuring compliance with specifications.</li>
+                        <li>Validated critical UDS services (e.g., Routine Control, DTC Settings, Session Control) and NVM functionality, identifying key defects before production.</li>
+                     </ul>
+                    <div class="mt-6">
+                        <h5 class="font-semibold text-lg mb-3 text-primary-dark">Technologies Used:</h5>
+                        <div class="flex flex-wrap gap-2">
+                           <span class="skill-tag-dark">CAPL</span>
+                           <span class="skill-tag-dark">CANoe</span>
+                           <span class="skill-tag-dark">CAN/CAN FD</span>
+                           <span class="skill-tag-dark">UDS (ISO-14229)</span>
+                           <span class="skill-tag-dark">NVM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t section-divider my-16 fade-in-section"></div>
+
+        <section id="skills" class="py-16 md:py-20 fade-in-section">
+            <h2 class="text-3xl font-bold tracking-tight text-center text-primary-dark">Technical Skills</h2>
+            <p class="mt-4 text-lg text-center text-secondary-dark max-w-2xl mx-auto">A deep dive into the specific tools, languages, and technologies that I use to build, secure, and test advanced automotive systems.</p>
+
+            <div class="mt-16 grid lg:grid-cols-5 gap-12 items-center fade-in-section">
+                <div class="lg:col-span-3 card-dark p-4 sm:p-6">
+                     <div class="chart-container" style="max-width: 100%; height: 400px;">
+                        <canvas id="ecuCybersecurityChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <h3 class="text-2xl font-bold text-primary-dark">Automotive ECU Cybersecurity Proficiency</h3>
+                    <p class="mt-2 text-secondary-dark leading-relaxed">This chart visualizes my core strengths in Automotive ECU Cybersecurity. My expertise is concentrated on robust HSM integration, advanced cryptographic operations, secure communication protocols, comprehensive immobilizer system design, and secure diagnostic methodologies, all crucial for protecting modern vehicles.</p>
+                </div>
+            </div>
+            
+            <div class="mt-16 max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8 fade-in-section" data-stagger-children="0.1">
+                <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Automotive & AUTOSAR</h4>
+                    <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>AUTOSAR Layered Architecture</li>
+                        <li>RTE & SWC Design</li>
+                        <li>BSW Configuration (COM, PDUR)</li>
+                        <li>Memory Stack (EEPROM, Flash)</li>
+                        <li>ASPICE Process</li>
+                    </ul>
+                </div>
+                <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Security & Diagnostics</h4>
+                    <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>ETAS CycurHSM Extensions</li>
+                        <li>Cryptographic Services & Algorithms</li>
+                        <li>Secure Storage & TRNG</li>
+                        <li>HSM Integration & Key Management</li>
+                        <li>Diagnostics (DEM, DCM)</li>
+                        <li>UDS (ISO-14229) & OBDonUDS</li>
+                    </ul>
+                </div>
+                <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Protocols & Hardware</h4>
+                     <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>CAN / CAN FD / Ethernet</li>
+                        <li>Secure In-Vehicle Communication</li>
+                        <li>Infineon TC39x (HSM Core)</li>
+                        <li>i.MX8 Processor (ARM Cortex-M4)</li>
+                        <li>Cypress Traveo MCUs</li>
+                    </ul>
+                </div>
+                <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Development Tools</h4>
+                     <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>DaVinci Configurator Pro</li>
+                        <li>Vector Tools (CANoe, CANalyzer)</li>
+                        <li>Matlab (MBD)</li>
+                        <li>INCA</li>
+                    </ul>
+                </div>
+                 <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Debuggers & Languages</h4>
+                     <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>Lauterbach Trace32</li>
+                        <li>Universal Debug Engine (UDE)</li>
+                        <li>Embedded C</li>
+                        <li>CAPL</li>
+                        <li>Python (for automation)</li>
+                    </ul>
+                </div>
+                 <div class="card-dark fade-in-item">
+                    <h4 class="font-bold text-lg text-primary-dark">Version Control</h4>
+                     <ul class="mt-3 list-disc list-inside space-y-1 text-secondary-dark">
+                        <li>Git / GitHub</li>
+                        <li>SDOM</li>
+                        <li>ALM</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="border-t section-divider my-16 fade-in-section"></div>
+
+        <section id="education" class="py-16 md:py-20 fade-in-section">
+            <h2 class="text-3xl font-bold tracking-tight text-center text-primary-dark">Education</h2>
+            <p class="mt-4 text-lg text-center text-secondary-dark max-w-2xl mx-auto">My academic foundation in engineering provided the fundamental principles that underpin my professional work.</p>
+            <div class="mt-12 max-w-md mx-auto card-dark overflow-hidden md:max-w-2xl fade-in-section">
+                <div class="md:flex">
+                    <div class="md:flex-shrink-0 flex justify-center items-center bg-accent-subtle-dark p-8">
+                        <svg class="h-16 w-16 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m-6-3h12"></path></svg>
+                    </div>
+                    <div class="p-8">
+                        <div class="uppercase tracking-wide text-sm text-accent-dark font-semibold">Bachelor of Engineering</div>
+                        <p class="block mt-1 text-lg leading-tight font-medium text-primary-dark">Electronics and Communication Engineering (ECE)</p>
+                        <p class="mt-2 text-secondary-dark">Panimalar Engineering College, Chennai</p>
+                        <p class="mt-2 text-secondary-dark">Graduated: 2018</p>
+                        <p class="mt-2 text-secondary-dark">CGPA: 7.59 / 10.0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-900 mt-16 border-t section-divider">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-secondary-dark text-sm">
+            <p>&copy; 2024 Vasantha Kumar Reddy V M. Interactive resume generated for demonstration.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+                mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+                mobileMenu.classList.toggle('hidden');
+                mobileMenuButton.querySelector('svg:first-child').classList.toggle('hidden');
+                mobileMenuButton.querySelector('svg:last-child').classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('#mobile-menu a, header nav a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    if (this.closest('#mobile-menu')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuButton.setAttribute('aria-expanded', 'false');
+                        mobileMenuButton.querySelector('svg:first-child').classList.remove('hidden');
+                        mobileMenuButton.querySelector('svg:last-child').classList.add('hidden');
+                    }
+                });
+            });
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('header nav a.nav-link');
+            
+            const activateNavLink = (currentId) => {
+                 navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentId}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            const sectionObserverOptions = {
+                rootMargin: '-50px 0px -50% 0px',
+                threshold: 0.2
+            };
+
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        activateNavLink(entry.target.getAttribute('id'));
+                    }
+                });
+            }, sectionObserverOptions);
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+
+
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', () => {
+                    const projectId = item.id.replace('timeline-', 'project-');
+                    const projectElement = document.getElementById(projectId);
+                    if (projectElement) {
+                        projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        projectElement.classList.add('ring-2', 'ring-blue-500', 'transition-all', 'duration-300');
+                        setTimeout(() => {
+                           projectElement.classList.remove('ring-2', 'ring-blue-500');
+                        }, 2500);
+                    }
+                });
+            });
+            
+            const observerOptions = {
+                threshold: 0.05, 
+                rootMargin: "0px 0px -50px 0px" 
+            };
+
+            const fadeInElements = document.querySelectorAll('.fade-in-section');
+            const fadeInObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        
+                        const staggerGroup = entry.target.querySelector('[data-stagger-children]') || entry.target.matches('[data-stagger-children]') ? entry.target : null;
+                        
+                        if (staggerGroup) {
+                            const delayBase = parseFloat(staggerGroup.dataset.staggerChildren) || 0.1;
+                            const items = staggerGroup.querySelectorAll('.fade-in-item');
+                            items.forEach((item, index) => {
+                                item.style.transitionDelay = `${index * delayBase}s`;
+                                item.classList.add('is-visible'); 
+                            });
+                        }
+                        // observer.unobserve(entry.target); // Optional
+                    }
+                });
+            }, observerOptions);
+
+            fadeInElements.forEach(el => {
+                fadeInObserver.observe(el);
+            });
+            
+            // Fallback for individual items not in a stagger group but direct children of fade-in-section
+            document.querySelectorAll('.fade-in-section > .fade-in-item').forEach(item => {
+                if (!item.closest('[data-stagger-children]')) { // Ensure it's not part of an explicit stagger group
+                     fadeInObserver.observe(item); // Observe individual items too
+                }
+            });
+
+
+            const cybersecurityCtx = document.getElementById('ecuCybersecurityChart')?.getContext('2d');
+            if(cybersecurityCtx) {
+                Chart.defaults.font.family = 'Inter'; 
+                new Chart(cybersecurityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['HSM Integration & CycurHSM', 'Cryptographic Operations', 'Secure Communication Protocols', 'Immobilizer Systems Design', 'UDS & Secure Diagnostics'],
+                        datasets: [{
+                            label: 'Proficiency Level',
+                            data: [9, 9, 8, 9, 8], 
+                            backgroundColor: [
+                                'rgba(96, 165, 250, 0.6)', 
+                                'rgba(52, 211, 153, 0.6)', 
+                                'rgba(251, 113, 133, 0.6)',
+                                'rgba(251, 191, 36, 0.6)', 
+                                'rgba(167, 139, 250, 0.6)' 
+                            ],
+                            borderColor: [
+                                'rgba(96, 165, 250, 1)', 
+                                'rgba(52, 211, 153, 1)',
+                                'rgba(251, 113, 133, 1)',
+                                'rgba(251, 191, 36, 1)',
+                                'rgba(167, 139, 250, 1)'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 10,
+                                grid: { 
+                                    display: false,
+                                    borderColor: '#4B5563' 
+                                },
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        if (value === 0) return 'Beginner';
+                                        if (value === 5) return 'Proficient';
+                                        if (value === 10) return 'Expert';
+                                        return null;
+                                    },
+                                    font: { size: 10 },
+                                    color: '#9CA3AF' 
+                                }
+                            },
+                             y: {
+                                grid: { 
+                                    drawBorder: false,
+                                    color: '#374151' 
+                                },
+                                ticks: { 
+                                    font: { size: 11 },
+                                    color: '#D1D5DB' 
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Automotive ECU Cybersecurity Proficiency Detail',
+                                font: { size: 14, weight: '600' },
+                                color: '#E5E7EB', 
+                                padding: { bottom: 20, top: 5 }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: '#111827', 
+                                titleFont: { weight: 'bold', size: 13 },
+                                titleColor: '#E5E7EB',
+                                bodyFont: { size: 12 },
+                                bodyColor: '#D1D5DB',
+                                cornerRadius: 4,
+                                padding: 10,
+                                borderColor: '#374151', 
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
